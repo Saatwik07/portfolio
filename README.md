@@ -4,7 +4,7 @@ My personal portfolio website, built with pure HTML and CSS (no JavaScript). It 
 
 **Live site:** https://saatwik07.github.io/portfolio/
 
-![Portfolio preview](images/preview.png)
+![Portfolio preview]
 
 ## Features
 
