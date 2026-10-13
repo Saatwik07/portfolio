@@ -1,0 +1,642 @@
+/* ==========================================
+   DESIGN TOKENS: change colors here and the
+   whole site updates (CSS variables)
+   ========================================== */
+:root {
+  --background: #070b16;
+  --surface: #111830;
+  --ink: #e8ecf8;
+  --muted: #9aa6c4;
+  --accent: #6366f1;        /* fills (buttons, cards) */
+  --accent-text: #a5b4fc;   /* accent used as TEXT (lighter = readable on dark) */
+  --accent-2: #ffb703;      /* yellow highlight */
+  --cyan: #22d3ee;
+  --border: #26304f;
+  --radius: 16px;
+  --font: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Courier New", monospace;
+}
+
+/* ---------- Reset + base ---------- */
+* {
+  box-sizing: border-box; /* padding/border stay INSIDE the width */
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;   /* smooth jump when clicking nav links */
+  scroll-padding-top: 80px;  /* sticky navbar won't cover section titles */
+}
+
+body {
+  font-family: var(--font);
+  background-color: var(--background);
+  /* Faint grid pattern made from two gradients */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  color: var(--ink);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+
+/* Keyboard users get a visible outline */
+a:focus-visible, button:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+/* ==========================================
+   BACKGROUND GLOW ORBS
+   Fixed behind everything (z-index: -1).
+   They drift slowly using a keyframe animation.
+   ========================================== */
+.bg-orbs {
+  position: fixed;
+  inset: 0;              /* shortcut for top/right/bottom/left: 0 */
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;  /* clicks pass through */
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.45;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.orb-1 { width: 420px; height: 420px; background: var(--accent); top: -100px; left: -80px; }
+.orb-2 { width: 360px; height: 360px; background: var(--cyan); bottom: -120px; right: -60px; animation-duration: 22s; opacity: 0.3; }
+.orb-3 { width: 260px; height: 260px; background: #a855f7; top: 45%; left: 55%; animation-duration: 26s; opacity: 0.25; }
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.15); }
+}
+
+/* ==========================================
+   SCROLL PROGRESS BAR (top of the page)
+   Only works in browsers that support scroll-driven
+   animations; elsewhere it simply stays hidden.
+   ========================================== */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 200;
+  background: linear-gradient(90deg, var(--accent), var(--cyan), var(--accent-2));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@keyframes grow { to { transform: scaleX(1); } }
+
+@supports (animation-timeline: scroll()) {
+  .progress {
+    animation: grow linear;
+    animation-timeline: scroll(root); /* progress follows page scroll */
+  }
+}
+
+/* ==========================================
+   NAVBAR (Flexbox + sticky + glass effect)
+   ========================================== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 6%;
+  background: rgba(17, 24, 48, 0.65);
+  backdrop-filter: blur(14px);            /* frosted glass */
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 1px;
+  color: var(--accent-text);
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+.logo:hover {
+  color: #fff;
+  text-shadow: 0 0 14px var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: 26px;
+}
+
+.nav-links a {
+  position: relative;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+.nav-links a:hover { color: var(--ink); }
+
+/* Underline that grows from the left on hover */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  transition: width 0.3s ease;
+}
+.nav-links a:hover::after { width: 100%; }
+
+/* ==========================================
+   BUTTONS (with a "shine" sweep on hover)
+   ========================================== */
+.btn {
+  position: relative;
+  overflow: hidden; /* keeps the shine inside the button */
+  display: inline-block;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid var(--accent);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.45);
+}
+
+/* The shine: a slanted light strip that slides across */
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.btn:hover::after { left: 130%; }
+
+.btn-primary { background: linear-gradient(135deg, var(--accent), #8b5cf6); color: #fff; border-color: transparent; }
+.btn-outline { background: transparent; color: var(--accent-text); }
+.btn-outline:hover { background: var(--accent); color: #fff; }
+
+.btn-small { padding: 8px 18px; font-size: 0.9rem; background: var(--accent); color: #fff; }
+.btn-small.btn-outline { background: transparent; color: var(--accent-text); }
+.btn-small.btn-outline:hover { background: var(--accent); color: #fff; }
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================
+   HERO (Flexbox split layout)
+   ========================================== */
+.hero {
+  min-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 60px 6%;
+}
+
+.hero-text { flex: 1; }
+
+/* Each hero element fades up, one after another (staggered delay) */
+.hero-text > * { animation: fadeUp 0.8s ease both; }
+.hero-text > :nth-child(1) { animation-delay: 0.1s; }
+.hero-text > :nth-child(2) { animation-delay: 0.25s; }
+.hero-text > :nth-child(3) { animation-delay: 0.4s; }
+.hero-text > :nth-child(4) { animation-delay: 0.55s; }
+.hero-text > :nth-child(5) { animation-delay: 0.7s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Small badge with a pulsing dot */
+.hello {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(17, 24, 48, 0.7);
+  color: var(--accent-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.hello::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: pulse 1.8s ease-out infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
+}
+
+.hero h1 {
+  font-size: clamp(2.3rem, 8vw, 5rem);
+  line-height: 1.05;
+  margin: 18px 0 12px;
+}
+
+/* Animated gradient text: the background is wider than the text and slides */
+.gradient-text {
+  background: linear-gradient(90deg, #818cf8, var(--cyan), #818cf8);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 6s linear infinite;
+}
+@keyframes shine { to { background-position: 200% center; } }
+
+.hero h2 {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* Typing effect: width grows in 31 steps (one per character) */
+.typing {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 20ch;                         /* "ch" = width of one monospace character */
+  font-family: var(--mono);
+  color: var(--muted);
+  border-right: 3px solid var(--accent-2);  /* the blinking cursor */
+  animation:
+    typing 3s steps(31) 1s both,
+    caret 0.8s step-end infinite;
+}
+@keyframes typing { from { width: 0; } }
+@keyframes caret  { 50% { border-color: transparent; } }
+
+.intro { max-width: 52ch; margin-bottom: 28px; color: var(--muted); }
+
+/* ---------- Hero art: a little solar system (matches the project!) ---------- */
+.hero-art {
+  position: relative;
+  flex: 1;
+  height: 380px;
+  display: grid;
+  place-items: center;
+}
+
+.planet {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c7d2fe, var(--accent) 45%, #1e1b4b);
+  box-shadow: 0 0 70px rgba(99, 102, 241, 0.65);
+  animation: float 6s ease-in-out infinite;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;             /* with inset:0 this centres the ring */
+  border-radius: 50%;
+  border: 1px dashed rgba(165, 180, 252, 0.35);
+}
+.ring-1 { width: 230px; height: 230px; animation: spin 14s linear infinite; }
+.ring-2 { width: 340px; height: 340px; border-color: rgba(34, 211, 238, 0.3); animation: spin 24s linear infinite reverse; }
+
+/* The small "moon" riding on each ring */
+.ring::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 16px var(--accent-2);
+}
+.ring-2::after { background: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
+
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-18px); }
+}
+
+/* ==========================================
+   SHARED SECTION STYLES
+   ========================================== */
+.section {
+  padding: 70px 6%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
+  margin-bottom: 32px;
+}
+/* Small gradient bar under every title */
+.section-title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+
+.about-text { max-width: 62ch; font-size: 1.1rem; color: var(--muted); }
+
+/* Sections fade in as you scroll to them (scroll-driven animation).
+   Browsers without support just show the sections normally. */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(50px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@supports (animation-timeline: view()) {
+  .section {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+}
+
+/* ==========================================
+   CARDS: shared look for skill / project / education
+   The gradient-border trick: one gradient fills the padding box,
+   another fills the border box and shows through the transparent border.
+   ========================================== */
+.skill-card,
+.project-card,
+.edu-card {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, var(--border), var(--border)) border-box;
+  border-radius: var(--radius);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.skill-card:hover,
+.project-card:hover,
+.edu-card:hover {
+  transform: translateY(-8px);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, var(--accent), var(--cyan)) border-box;
+  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.25);
+}
+
+/* ==========================================
+   SKILLS: bento grid (CSS Grid)
+   ========================================== */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.skill-card { padding: 24px; }
+.skill-card h3 { margin-bottom: 6px; }
+.skill-card p { color: var(--muted); }
+
+.skill-card.big {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border-color: transparent;
+}
+.skill-card.big:hover { background: linear-gradient(135deg, var(--accent), #8b5cf6); }
+.skill-card.big p { color: #e0e0ff; }
+.skill-card.big h3 { font-size: 1.6rem; }
+
+.skill-card.wide { grid-column: span 2; }
+
+.pill {
+  display: inline-block;
+  padding: 4px 14px;
+  margin: 4px 6px 0 0;
+  border-radius: 999px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.pill:hover { border-color: var(--accent-text); color: var(--accent-text); }
+
+/* ==========================================
+   LOGO CAROUSEL (infinite marquee, CSS only)
+   The chips are written twice in the HTML. The track slides left by
+   exactly half its width, then jumps back, so the loop looks endless.
+   ========================================== */
+.marquee {
+  overflow: hidden;
+  margin-top: 28px;
+  /* Fade the left and right edges out */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;                 /* track is as wide as all chips together */
+  animation: scroll 32s linear infinite;
+}
+.marquee.reverse .marquee-track { animation-direction: reverse; animation-duration: 38s; }
+.marquee:hover .marquee-track { animation-play-state: paused; } /* hover to pause */
+
+/* -50% = half the track (one full set) and -8px = half of the gap */
+@keyframes scroll { to { transform: translateX(calc(-50% - 8px)); } }
+
+.tech-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 22px 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+  font-weight: 500;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.tech-chip:hover {
+  border-color: var(--accent-text);
+  transform: scale(1.06);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+}
+
+/* Logos sit on a light circle so dark logos stay visible */
+.tech-chip img,
+.tech-chip .emoji {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  padding: 7px;
+  flex-shrink: 0;
+}
+.tech-chip .emoji {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+/* ==========================================
+   PROJECTS (CSS Grid, auto-responsive)
+   ========================================== */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.project-card { overflow: hidden; } /* clips the zooming image */
+
+.project-image {
+  height: 180px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: #fff;
+}
+.project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.project-card:hover .project-image img { transform: scale(1.1); } /* image zoom */
+
+.project-body { padding: 20px; }
+.project-body h3 { margin-bottom: 6px; }
+.project-body p { margin-bottom: 10px; color: var(--muted); }
+.tech {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--accent-text) !important;
+}
+
+/* ==========================================
+   EDUCATION
+   ========================================== */
+.edu-card { padding: 26px; border-left: 6px solid var(--accent-2); }
+.edu-card h3 { margin-bottom: 4px; }
+.edu-card p { color: var(--muted); }
+
+/* ==========================================
+   CONTACT
+   ========================================== */
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.contact-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.contact-links a:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-text);
+  box-shadow: 0 10px 26px rgba(99, 102, 241, 0.3);
+}
+.contact-links img { width: 22px; height: 22px; }
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+.footer {
+  margin-top: 40px;
+  text-align: center;
+  padding: 28px;
+  background: #050811;
+  color: var(--muted);
+  border-image: linear-gradient(90deg, var(--accent), var(--cyan), var(--accent-2)) 1;
+  border-top: 2px solid;
+}
+
+/* ==========================================
+   RESPONSIVE (media queries)
+   max-width means "this width and smaller"
+   ========================================== */
+@media (max-width: 800px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: auto;
+  }
+  .hero-art { width: 100%; height: 320px; }
+  .ring-2 { width: 290px; height: 290px; }
+
+  .skills-grid { grid-template-columns: 1fr 1fr; }
+  .skill-card.big { grid-column: span 2; grid-row: auto; }
+}
+
+@media (max-width: 560px) {
+  .navbar { flex-direction: column; gap: 8px; }
+  .nav-links { gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  /* On small screens the typing line is allowed to wrap instead */
+  .typing {
+    width: auto;
+    white-space: normal;
+    border-right: none;
+    animation: none;
+    font-size: 1rem;
+  }
+
+  .skills-grid { grid-template-columns: 1fr; }
+  .skill-card.big,
+  .skill-card.wide { grid-column: auto; }
+}
+
+/* Respect users who turn animations off in their OS settings */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .progress { display: none; }
+}
